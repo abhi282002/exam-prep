@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TRPCContextType } from "./trpc-context";
+import { verifyUserIsAdmin } from "@/lib/admin-auth";
 
 const trpcInstance = initTRPC.context<TRPCContextType>().create({
   transformer: superjson,
@@ -16,13 +17,13 @@ export const protectedProcedure = trpcInstance.procedure.use(({ ctx, next }) => 
   return next({ ctx: { ...ctx, authenticatedUser: ctx.authenticatedUser } });
 });
 
-export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const adminEmailsList = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((singleEmailAddress) => singleEmailAddress.trim().toLowerCase());
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const isAuthorizedAdmin = await verifyUserIsAdmin(
+    ctx.authenticatedUser.id,
+    ctx.authenticatedUser.email
+  );
 
-  const currentEmail = ctx.authenticatedUser.email?.toLowerCase();
-  if (!currentEmail || !adminEmailsList.includes(currentEmail)) {
+  if (!isAuthorizedAdmin) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Admin privileges required" });
   }
 

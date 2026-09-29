@@ -1,53 +1,40 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { useHeaderAuth } from "./use-header-auth";
 
 export function HeaderAuthButton() {
-  const router = useRouter();
-  const [authenticatedUser, setAuthenticatedUser] = React.useState<SupabaseUser | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = React.useState(true);
+  const { isLoading, isAuthenticated, isUserAdmin, handleSignOut } = useHeaderAuth();
 
-  React.useEffect(() => {
-    const supabaseClient = createSupabaseBrowserClient();
-    supabaseClient.auth.getUser().then(({ data: { user } }) => {
-      setAuthenticatedUser(user);
-      setIsLoadingSession(false);
-    });
+  if (isLoading) return null;
 
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      setAuthenticatedUser(session?.user ?? null);
-      setIsLoadingSession(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleUserSignOut = async () => {
-    const supabaseClient = createSupabaseBrowserClient();
-    await supabaseClient.auth.signOut();
-    setAuthenticatedUser(null);
-    router.push("/login");
-    router.refresh();
-  };
-
-  if (isLoadingSession) return null;
-
-  if (authenticatedUser) {
+  if (!isAuthenticated) {
     return (
-      <Button variant="ghost" size="sm" onClick={handleUserSignOut}>
-        Sign Out
-      </Button>
+      <Link href="/login">
+        <Button variant="ghost" size="sm">
+          Sign In
+        </Button>
+      </Link>
     );
   }
 
   return (
-    <Link href="/login">
-      <Button variant="ghost" size="sm">Sign In</Button>
-    </Link>
+    <div className="flex items-center gap-2">
+      {isUserAdmin && (
+        <Link href="/admin">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-purple-300 text-purple-700 hover:bg-purple-50"
+          >
+            Admin
+          </Button>
+        </Link>
+      )}
+      <Button variant="ghost" size="sm" onClick={handleSignOut}>
+        Sign Out
+      </Button>
+    </div>
   );
 }
