@@ -11,7 +11,6 @@ export function useTestAttempt(attemptId: string) {
   const submitMutation = trpc.attempt.submit.useMutation();
 
   const [answersMap, setAnswersMap] = React.useState<Record<string, string>>({});
-  const [isSavedIndicator, setIsSavedIndicator] = React.useState(false);
 
   React.useEffect(() => {
     if (attemptQuery.data?.savedAnswers) {
@@ -23,25 +22,15 @@ export function useTestAttempt(attemptId: string) {
     }
   }, [attemptQuery.data?.savedAnswers]);
 
-  React.useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!attemptQuery.data?.isCompleted) { event.preventDefault(); event.returnValue = ""; }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [attemptQuery.data?.isCompleted]);
-
-  const recordAnswer = async (questionId: string, optionKey: string | null) => {
+  const recordAnswer = React.useCallback(async (questionId: string, optionKey: string | null) => {
     setAnswersMap((prev) => ({ ...prev, [questionId]: optionKey ?? "" }));
-    setIsSavedIndicator(true);
     await saveAnswerMutation.mutateAsync({ attemptId, questionId, selectedOptionKey: optionKey });
-    setTimeout(() => setIsSavedIndicator(false), 1200);
-  };
+  }, [attemptId, saveAnswerMutation]);
 
-  const finalizeTest = async () => {
+  const finalizeTest = React.useCallback(async () => {
     await submitMutation.mutateAsync({ attemptId });
     router.push(`/result/${attemptId}`);
-  };
+  }, [attemptId, submitMutation, router]);
 
-  return { attemptQuery, answersMap, isSavedIndicator, recordAnswer, finalizeTest };
+  return { attemptQuery, answersMap, recordAnswer, finalizeTest };
 }

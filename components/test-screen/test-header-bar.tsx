@@ -1,36 +1,44 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { GraduationCap } from "@/components/icons";
-import { TestTimerDisplay } from "./test-timer-display";
+import { ExamTimerBadge } from "./exam-timer-badge";
 
-interface TestHeaderBarProperties {
-  examinationTestTitle: string;
-  remainingTimeInSeconds: number;
-  onRequestSubmitTest: () => void;
+interface HeaderBarProps {
+  paperTitle: string;
+  deadlineTimestampMs: number;
+  onRequestSubmit: () => void;
   onTimeExpired: () => void;
 }
 
 export function TestHeaderBar({
-  examinationTestTitle,
-  remainingTimeInSeconds,
-  onRequestSubmitTest,
+  paperTitle,
+  deadlineTimestampMs,
+  onRequestSubmit,
   onTimeExpired,
-}: TestHeaderBarProperties) {
+}: HeaderBarProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white shadow-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-neutral-800 bg-[#0B0F17]/95 backdrop-blur-md px-4 sm:px-8 py-3 shadow-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-neutral-900 leading-tight">{examinationTestTitle}</h1>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium">NTA CBT Mode</Badge>
-          </div>
+          <h1 className="text-sm sm:text-base font-bold text-white tracking-tight">
+            {paperTitle}
+          </h1>
         </div>
+
         <div className="flex items-center gap-3">
-          <TestTimerDisplay initialRemainingSeconds={remainingTimeInSeconds} onTimerExpired={onTimeExpired} />
-          <Button variant="default" size="sm" onClick={onRequestSubmitTest} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <div className="hidden sm:flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-[#161B26] px-3 py-1.5 text-xs text-neutral-300">
+            <span className="text-neutral-400">View in</span>
+            <span className="font-semibold text-white">English ▾</span>
+          </div>
+
+          <ExamTimerBadge
+            deadlineTimestampMs={deadlineTimestampMs}
+            onTimeExpired={onTimeExpired}
+          />
+
+          <Button
+            size="sm"
+            onClick={onRequestSubmit}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-4 shadow-sm"
+          >
             Submit Test
           </Button>
         </div>

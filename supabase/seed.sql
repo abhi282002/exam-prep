@@ -30,17 +30,15 @@ BEGIN
   )
   RETURNING id INTO v_set_id;
 
-  -- 3. Insert Question 1
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 3. Question 1 (mcq)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    1,
+    v_set_id, 1,
     'Which of the following evaluation systems is primarily designed to assess student mastery at the end of an instructional unit?',
-    'Teaching Aptitude',
-    'B',
+    'Which of the following evaluation systems is primarily designed to assess student mastery at the end of an instructional unit?',
+    'mcq', null, 1, 'Teaching Aptitude', 'B',
     'Summative evaluation assesses overall learning outcome at the conclusion of an instructional period.'
-  )
-  RETURNING id INTO v_question_id;
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
     (v_question_id, 'A', 'Formative Evaluation'),
@@ -48,166 +46,92 @@ BEGIN
     (v_question_id, 'C', 'Diagnostic Evaluation'),
     (v_question_id, 'D', 'Norm-Referenced Evaluation');
 
-  -- 4. Insert Question 2
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 4. Question 2 (match with 3 rows per list)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    2,
-    'In qualitative research, which technique is predominantly used to ensure data saturation and thematic consistency?',
-    'Research Aptitude',
-    'C',
-    'Triangulation combines multiple observers, theories, or empirical materials to establish comprehensive validity.'
-  )
-  RETURNING id INTO v_question_id;
+    v_set_id, 2,
+    'Match List I with List II',
+    'Match List I with List II:',
+    'match',
+    '{"list_a": {"title": "List I (Storage Media)", "items": [{"label": "A", "text": "RAM"}, {"label": "B", "text": "Hard Disk"}, {"label": "C", "text": "Blu-ray Disc"}]}, "list_b": {"title": "List II (Classification)", "items": [{"label": "I", "text": "Volatile Primary Memory"}, {"label": "II", "text": "Non-volatile Magnetic Storage"}, {"label": "III", "text": "Optical Storage Medium"}]}}'::jsonb,
+    2, 'Information & Communication Technology', 'A',
+    'RAM is volatile primary memory, Hard Disk is non-volatile magnetic storage, and Blu-ray is optical storage.'
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'Parametric Variance Testing'),
-    (v_question_id, 'B', 'Quota Stratification'),
-    (v_question_id, 'C', 'Triangulation'),
-    (v_question_id, 'D', 'Standardized Normal Distribution');
+    (v_question_id, 'A', 'A-I, B-II, C-III'),
+    (v_question_id, 'B', 'A-II, B-I, C-III'),
+    (v_question_id, 'C', 'A-III, B-II, C-I'),
+    (v_question_id, 'D', 'A-I, B-III, C-II');
 
-  -- 5. Insert Question 3
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 5. Question 3 (passage)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    3,
-    'Which of the following communication barriers occurs when the receiver interprets words differently than intended by the sender due to language nuances?',
-    'Communication',
-    'A',
-    'Semantic barriers arise from ambiguities in language, symbols, or technical jargon.'
-  )
-  RETURNING id INTO v_question_id;
+    v_set_id, 3,
+    'Read the passage and answer the following question:',
+    'According to the passage, what is the primary threat to freshwater ecosystems?',
+    'passage',
+    '{"passage": "Freshwater ecosystems cover less than one percent of the Earth surface yet support remarkable biodiversity. However, escalating human interventions—such as industrial pollutant runoff, unsustainable water extraction, and invasive aquatic species—threaten their biological integrity at unprecedented rates."}'::jsonb,
+    3, 'Reading Comprehension', 'B',
+    'The passage explicitly identifies escalating human interventions and industrial pollutant runoff as primary threats.'
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'Semantic Barrier'),
-    (v_question_id, 'B', 'Psychological Barrier'),
-    (v_question_id, 'C', 'Physical Barrier'),
-    (v_question_id, 'D', 'Organizational Barrier');
+    (v_question_id, 'A', 'Natural salinity fluctuations'),
+    (v_question_id, 'B', 'Human interventions and industrial runoff'),
+    (v_question_id, 'C', 'Seasonal precipitation anomalies'),
+    (v_question_id, 'D', 'Glacial meltwater dilution');
 
-  -- 6. Insert Question 4
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 6. Question 4 (statements)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    4,
-    'Find the next number in the given logical sequence: 4, 9, 25, 49, 121, ?',
-    'Mathematical Reasoning',
-    'D',
-    'The terms are squares of consecutive prime numbers: 2^2=4, 3^2=9, 5^2=25, 7^2=49, 11^2=121, 13^2=169.'
-  )
-  RETURNING id INTO v_question_id;
+    v_set_id, 4,
+    'Given below are two statements:',
+    'In the light of the above statements, choose the most appropriate answer from the options given below:',
+    'statements',
+    '{"statements": [{"label": "Statement I", "text": "Qualitative research paradigms emphasize contextual understanding and inductive thematic synthesis."}, {"label": "Statement II", "text": "Quantitative research strictly excludes statistical hypothesis testing."}]}'::jsonb,
+    4, 'Research Aptitude', 'C',
+    'Statement I is true because qualitative research is inductive and contextual; Statement II is false because quantitative research relies on statistical hypothesis testing.'
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', '144'),
-    (v_question_id, 'B', '156'),
-    (v_question_id, 'C', '168'),
-    (v_question_id, 'D', '169');
+    (v_question_id, 'A', 'Both Statement I and Statement II are correct'),
+    (v_question_id, 'B', 'Both Statement I and Statement II are incorrect'),
+    (v_question_id, 'C', 'Statement I is correct but Statement II is incorrect'),
+    (v_question_id, 'D', 'Statement I is incorrect but Statement II is correct');
 
-  -- 7. Insert Question 5
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 7. Question 5 (assertion_reason)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    5,
-    'In classical Indian logic (Nyaya), which source of knowledge refers to knowledge gained through comparison and analogy?',
-    'Logical Reasoning',
-    'B',
-    'Upamana is valid cognition derived through similitude or comparison with an already known standard.'
-  )
-  RETURNING id INTO v_question_id;
+    v_set_id, 5,
+    'Given below are two statements, one is labelled as Assertion (A) and the other is labelled as Reason (R):',
+    'In the light of the above statements, choose the correct answer from the options given below:',
+    'assertion_reason',
+    '{"assertion": "Higher education institutions in India are rapidly adopting blended learning models.", "reason": "Digital infrastructure expansion and NEP 2020 recommendations encourage technology-enabled pedagogical flexibility."}'::jsonb,
+    5, 'Higher Education System', 'A',
+    'Both Assertion (A) and Reason (R) are true, and (R) is the correct explanation of (A).'
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'Pratyaksha (Perception)'),
-    (v_question_id, 'B', 'Upamana (Comparison)'),
-    (v_question_id, 'C', 'Anumana (Inference)'),
-    (v_question_id, 'D', 'Sabda (Verbal Testimony)');
+    (v_question_id, 'A', 'Both (A) and (R) are true and (R) is the correct explanation of (A)'),
+    (v_question_id, 'B', 'Both (A) and (R) are true but (R) is NOT the correct explanation of (A)'),
+    (v_question_id, 'C', '(A) is true but (R) is false'),
+    (v_question_id, 'D', '(A) is false but (R) is true');
 
-  -- 8. Insert Question 6
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
+  -- 8. Question 6 (mcq)
+  INSERT INTO public.questions (set_id, number, text, stem, type, content, source_page, subject, correct_option, explanation)
   VALUES (
-    v_set_id,
-    6,
+    v_set_id, 6,
     'Which protocol is primarily used for securely transferring encrypted web pages between a client browser and server?',
-    'Information & Communication Technology',
-    'C',
+    'Which protocol is primarily used for securely transferring encrypted web pages between a client browser and server?',
+    'mcq', null, 6, 'Information & Communication Technology', 'C',
     'HTTPS uses TLS/SSL encryption to secure communications over computer networks.'
-  )
-  RETURNING id INTO v_question_id;
+  ) RETURNING id INTO v_question_id;
 
   INSERT INTO public.options (question_id, key, text) VALUES
     (v_question_id, 'A', 'FTP'),
     (v_question_id, 'B', 'SMTP'),
     (v_question_id, 'C', 'HTTPS'),
     (v_question_id, 'D', 'Telnet');
-
-  -- 9. Insert Question 7
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
-  VALUES (
-    v_set_id,
-    7,
-    'Under the Sustainable Development Goals (SDGs) framework established by the United Nations, which goal specifically targets Quality Education?',
-    'People, Development & Environment',
-    'B',
-    'SDG 4 aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all.'
-  )
-  RETURNING id INTO v_question_id;
-
-  INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'SDG 3'),
-    (v_question_id, 'B', 'SDG 4'),
-    (v_question_id, 'C', 'SDG 6'),
-    (v_question_id, 'D', 'SDG 13');
-
-  -- 10. Insert Question 8
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
-  VALUES (
-    v_set_id,
-    8,
-    'According to the National Education Policy (NEP) 2020, what is the new pedagogical curricular structure replacing the 10+2 system?',
-    'Higher Education System',
-    'A',
-    'NEP 2020 replaces the 10+2 structure with a 5+3+3+4 design covering foundational, preparatory, middle, and secondary stages.'
-  )
-  RETURNING id INTO v_question_id;
-
-  INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', '5+3+3+4'),
-    (v_question_id, 'B', '5+4+3+2'),
-    (v_question_id, 'C', '4+4+4+4'),
-    (v_question_id, 'D', '3+3+4+5');
-
-  -- 11. Insert Question 9
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
-  VALUES (
-    v_set_id,
-    9,
-    'Which metric measures the particulate matter suspended in air with a aerodynamic diameter equal to or less than 2.5 micrometers?',
-    'People, Development & Environment',
-    'C',
-    'PM 2.5 refers to fine inhalable particles with diameters that are generally 2.5 micrometers and smaller.'
-  )
-  RETURNING id INTO v_question_id;
-
-  INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'AQI 100'),
-    (v_question_id, 'B', 'VOC 50'),
-    (v_question_id, 'C', 'PM 2.5'),
-    (v_question_id, 'D', 'CO2 PPM');
-
-  -- 12. Insert Question 10
-  INSERT INTO public.questions (set_id, number, text, subject, correct_option, explanation)
-  VALUES (
-    v_set_id,
-    10,
-    'In digital storage hierarchy, which memory type provides the fastest data access speed to the central processing unit?',
-    'Information & Communication Technology',
-    'D',
-    'CPU register and cache memory deliver the highest access speeds in the computer memory hierarchy.'
-  )
-  RETURNING id INTO v_question_id;
-
-  INSERT INTO public.options (question_id, key, text) VALUES
-    (v_question_id, 'A', 'Solid State Drive (SSD)'),
-    (v_question_id, 'B', 'Dynamic Random Access Memory (DRAM)'),
-    (v_question_id, 'C', 'Optical Storage'),
-    (v_question_id, 'D', 'CPU Cache Memory');
 
 END $$;

@@ -5,65 +5,44 @@ import { TestHeaderBar } from "./test-header-bar";
 import { SubmitConfirmationModal } from "./submit-confirmation-modal";
 import { TestEnvironmentContent } from "./test-environment-content";
 import { useTestAttempt } from "./use-test-attempt";
-import { useTestTimer } from "./use-test-timer";
+import { useTestEnvironmentState } from "./use-test-environment-state";
 
 export function TestEnvironmentContainer({ attemptIdentifier }: { attemptIdentifier: string }) {
-  const { attemptQuery, answersMap, isSavedIndicator, recordAnswer, finalizeTest } =
-    useTestAttempt(attemptIdentifier);
-  const [activeQuestionIndex, setActiveQuestionIndex] = React.useState(0);
-  const [markedForReviewSet, setMarkedForReviewSet] = React.useState<Set<number>>(new Set());
-  const [isSubmitModalVisible, setIsSubmitModalVisible] = React.useState(false);
-
-  const remainingSeconds = useTestTimer({
-    serverRemainingSeconds: attemptQuery.data?.remainingSeconds,
-    onTimeExpired: finalizeTest,
-    onReSync: () => attemptQuery.refetch(),
-  });
-
+  const { attemptQuery, answersMap, recordAnswer, finalizeTest } = useTestAttempt(attemptIdentifier);
   const questions = attemptQuery.data?.questions ?? [];
-  const currentQuestion = questions[activeQuestionIndex];
+  const state = useTestEnvironmentState(questions.length);
+  const deadlineMs = React.useMemo(() => {
+    return attemptQuery.data?.deadline ? new Date(attemptQuery.data.deadline).getTime() : 0;
+  }, [attemptQuery.data?.deadline]);
 
-  const handleSelectOption = (key: string) => { if (currentQuestion) recordAnswer(currentQuestion.id, key); };
-  const handleClearResponse = () => { if (currentQuestion) recordAnswer(currentQuestion.id, null); };
-  const handleToggleReview = () => setMarkedForReviewSet((prev) => {
-    const next = new Set(prev);
-    if (next.has(activeQuestionIndex)) next.delete(activeQuestionIndex);
-    else next.add(activeQuestionIndex);
-    return next;
-  });
-
-  if (attemptQuery.isLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-neutral-500">Loading mock exam environment...</div>;
+  if (attemptQuery.isLoading || deadlineMs === 0) {
+    return <div className="flex min-h-screen items-center justify-center bg-[#0B0F17] text-sm text-neutral-400">Loading test...</div>;
   }
+  const current = questions[state.activeQuestionIndex];
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-100 text-neutral-900">
+    <div className="flex min-h-screen flex-col bg-[#0B0F17] text-neutral-100">
       <TestHeaderBar
-        examinationTestTitle={attemptQuery.data?.setName ?? "UGC NET Mock Paper"}
-        remainingTimeInSeconds={remainingSeconds}
-        onRequestSubmitTest={() => setIsSubmitModalVisible(true)}
-        onTimeExpired={finalizeTest}
+        paperTitle={attemptQuery.data?.setName ?? "UGC NET Paper 1"}
+        deadlineTimestampMs={deadlineMs}
+        onRequestSubmit={() => state.setIsSubmitModalVisible(true)} onTimeExpired={finalizeTest}
       />
       <TestEnvironmentContent
         questionsList={questions}
-        activeQuestionIndex={activeQuestionIndex}
-        recordedAnswers={answersMap}
-        markedForReviewSet={markedForReviewSet}
-        isAutosaveActive={isSavedIndicator}
-        onSelectOption={handleSelectOption}
-        onNavigatePrevious={() => setActiveQuestionIndex((p) => Math.max(0, p - 1))}
-        onNavigateNext={() => setActiveQuestionIndex((p) => Math.min(questions.length - 1, p + 1))}
-        onToggleReview={handleToggleReview}
-        onClearResponse={handleClearResponse}
-        onSelectQuestionIndex={setActiveQuestionIndex}
+        activeQuestionIndex={state.activeQuestionIndex}
+        answersMap={answersMap}
+        markedForReviewSet={state.markedForReviewSet}
+        onSelectOption={(key) => current && recordAnswer(current.id, key)}
+        onNavigatePrevious={state.navigatePrevious} onNavigateNext={state.navigateNext}
+        onToggleReview={() => state.toggleReview(state.activeQuestionIndex)}
+        onClearResponse={() => current && recordAnswer(current.id, null)}
+        onSelectQuestionIndex={state.setActiveQuestionIndex}
       />
       <SubmitConfirmationModal
-        isModalOpen={isSubmitModalVisible}
-        totalQuestionsCount={questions.length}
-        answeredQuestionsCount={Object.keys(answersMap).length}
-        markedForReviewCount={markedForReviewSet.size}
-        onConfirmSubmission={finalizeTest}
-        onCancelSubmission={() => setIsSubmitModalVisible(false)}
+        isOpen={state.isSubmitModalVisible}
+        totalQuestions={questions.length} answeredCount={Object.keys(answersMap).length}
+        markedCount={state.markedForReviewSet.size}
+        onConfirm={finalizeTest} onCancel={() => state.setIsSubmitModalVisible(false)}
       />
     </div>
   );
